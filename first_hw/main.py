@@ -35,13 +35,44 @@ def main():
     #adding Starter
     Tr.addPokemon(Starters[FirstPoke])
 
+    #move learning simulation
+    Tr.PokemonList[0].addMove(next(mv for mv in MvList if mv["name"]=="ember"))
+    Tr.PokemonList[0].addMove(next(mv for mv in MvList if mv["name"]=="water gun"))
+    Tr.PokemonList[0].addMove(next(mv for mv in MvList if mv["name"]=="tackle"))
+    
+    os.system("cls")
+    print("Current moves:\n")
+    print(Tr.PokemonList[0].movesDisp())
+    askInput("","press Enter to continue:")
+    os.system("cls")
+    #new Pokemon simulation
+    pk=next(poke for poke in PkList if poke["name"] == "squirtle")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    pk=next(poke for poke in PkList if poke["name"] == "charmander")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    pk=next(poke for poke in PkList if poke["name"] == "bulbasaur")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    pk=next(poke for poke in PkList if poke["name"] == "squirtle")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    pk=next(poke for poke in PkList if poke["name"] == "squirtle")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    pk=next(poke for poke in PkList if poke["name"] == "squirtle")
+    Tr.addPokemon(Pokemon(pk,[mv for mv in MvList if mv["name"] in pk["moves"]]))
+    
+    os.system("cls")
+    print("Current Pokemons:\n")
+    print(Tr.PokeDisp())
+    askInput("","press Enter to continue:")
+    os.system("cls")
     #combat simulaiton
     pk=next(poke for poke in PkList if poke["name"] == "squirtle")
     enemyPk=Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]])
 
     combatTest(Tr,enemyPk)
    
-#Combat handling funciton
+
+
+#################################Combat handling funciton##############################################
 def combatTest(Trainer,enemyPk):
    
     os.system("cls")
@@ -53,9 +84,10 @@ def combatTest(Trainer,enemyPk):
     #combat loop, combat ends either when the trainer has no more pokemons or when the enemy pokemon is defeated
     while(Trainer.hasPokemons() and not enemyPk.isKO()):
         #move choice
-        reqmsg="Select a move among the following: \n\n"+Trainer.PokemonList[0].movesDisp()
+        availMoves=Trainer.PokemonList[0].availMoves() 
+        reqmsg="Select a move among the following: \n\n"+Trainer.PokemonList[0].movesDisp(availMoves)
         errmsg=["You must insert a number","You can only choose between the provided options"]
-        mv=inputLoop("int",reqmsg,errmsg,[1,2,3])-1
+        mv=inputLoop("int",reqmsg,errmsg,availMoves)
         os.system("cls")
         print(Trainer.PokemonList[0].Name+" uses "+Trainer.PokemonList[0].moves[mv].name)
         
@@ -72,22 +104,26 @@ def combatTest(Trainer,enemyPk):
         os.system("cls")
         
         #enemy turn, handled automatically
-        print("Enemy turn /!\\ \n\n")
-        askInput("","Press Enter to continue:")
-        os.system("cls")
+        if not enemyPk.isKO():
+            print("Enemy turn /!\\ \n\n")
+            askInput("","Press Enter to continue:")
+            os.system("cls")
+        
+            #randomly selected move from available ones (PP>0)
+            availMoves=enemyPk.availMoves()
+            mv=random.choice(availMoves)
+            print(enemyPk.Name+" uses "+enemyPk.moves[mv].name)
 
-        #randomly selected move
-        mv=random.randint(1,len(enemyPk.moves))-1
-        print(enemyPk.Name+" uses "+enemyPk.moves[mv].name)
-
-        #attack success check
-        if enemyPk.useMove(mv,Trainer.PokemonList[0]):
-            
-            print("attack succeded!! \n\n")
-            print("enemy HP: "+str(enemyPk.showHP())+"\n\n")
-            print("your Pokemon HP: "+str(Trainer.PokemonList[0].showHP()))
+            #attack success check
+            if enemyPk.useMove(mv,Trainer.PokemonList[0]):
+                
+                print("attack succeded!! \n\n")
+                print("enemy HP: "+str(enemyPk.showHP())+"\n\n")
+                print("your Pokemon HP: "+str(Trainer.PokemonList[0].showHP()))
+            else:
+                print("attack missed")
         else:
-            print("attack missed")
+            print("Enemy Pokemon is KO\n\n")
 
         askInput("","Press Enter to continue:")
         os.system("cls")
@@ -98,6 +134,8 @@ def combatTest(Trainer,enemyPk):
         print("You won !!!")
     else:
         print("oh no you lost")
+
+
 
 
 if __name__=="__main__":

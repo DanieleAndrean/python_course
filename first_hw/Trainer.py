@@ -1,4 +1,5 @@
 import askInput
+import os
 class Trainer:
     def __init__(self,name):
         self.name=name
@@ -8,12 +9,22 @@ class Trainer:
 
 
     #returns a string to display the current Pokemons owned
-    def PokeDisp(self):
-        PkDisp=""
-        for i in range(len(self.PokemonList)):
-            PkDisp=PkDisp+str(i)+": "+str(self.PokemonList[i]+"\n")
-        
-        return PkDisp
+    def PokeDisp(self,*sel):
+        if len(sel)==0: #display all
+            pkDisp=""
+            for i in range(len(self.PokemonList)):
+                pkDisp=pkDisp+str(i)+": "+str(self.PokemonList[i])+"\n"
+            
+            return pkDisp
+        else: #display selected
+            idxs=sel[0]
+            pkDisp=""
+            for i in range(len(idxs)):
+                    pkDisp=pkDisp+str(idxs[i])+": "+str(self.PokemonList[idxs[i]])+"\n"
+            if pkDisp=="":
+                raise Exception("No available Pokemons")
+            return pkDisp
+    
     
     #Returns true if the trainer has available pokemons i.e. pokemon not KO
     def hasPokemons(self):
@@ -30,8 +41,12 @@ class Trainer:
         #max number of Pokemons check
         if len(self.PokemonList)>self.MaxPokemons:
             #request user which Pokemon to drop 
-            drop=askInput("int","choose a Pokemon to set free:\n"+self.PokeDisp(),[1,2,3,4,5])
-            self.dropMove(drop-1)
+            askInput.askInput("","you are trying to catch a new Pokemon but you must free one.\nPress Enter to continue:")
+            os.system("cls")
+            errmsg=["You must provide a number","You must choose a value among the specified ones"]
+            msg="choose a Pokemon to free:\n"+self.PokeDisp()
+            drop=askInput.inputLoop("int",msg,errmsg,[0,1,2,3,4,5,6])
+            self.dropPokemon(drop)
     
 
     #removes the Pokemon in position "drop" from Pokemon list 

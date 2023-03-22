@@ -2,7 +2,7 @@ import copy
 import askInput
 import random
 import math
-
+import os
 class baseStats:
     def __init__(self,bsDict):
         self.hp=bsDict["hp"]
@@ -76,32 +76,44 @@ class Pokemon:
         return copy.deepcopy(self.currentHP)    
     
     #returns a string to display the current moves
-    def movesDisp(self,PPonly):
-        if not PPonly:
+    def movesDisp(self,*sel):
+        if len(sel)==0: #display all
             mvDisp=""
             for i in range(len(self.moves)):
-                mvDisp=mvDisp+str(i+1)+": "+str(self.moves[i])+"\n"
+                mvDisp=mvDisp+str(i)+": "+str(self.moves[i])+"  PP: "+str(self.moves[i].getPP())+"\n"
             
             return mvDisp
-        else:
+        else: #display selected
+            idxs=sel[0]
             mvDisp=""
-            for i in range(len(self.moves)):
-                if self.moves[i].getPP()>0:
-                    mvDisp=mvDisp+str(i+1)+": "+str(self.moves[i])+"\n"
+            for i in range(len(idxs)):
+                    mvDisp=mvDisp+str(idxs[i])+": "+str(self.moves[idxs[i]])+"  PP: "+str(self.moves[idxs[i]].getPP())+"\n"
             if mvDisp=="":
                 raise Exception("No available moves")
             return mvDisp
     
+
+    #returns a list of indexes with available moves only
+    def availMoves(self):
+        idxs=[]
+        for i in range(len(self.moves)):
+            if(self.moves[i].getPP()>0):
+                idxs.append(i)
+        return idxs
+
+
     #adds a move to current move list, if the Pokemon already knows 4 moves, the user is asked to choose which one to forget
-    def addMove(self,move):
+    def addMove(self,mv):
         
-        self.moves.append(move)
+        self.moves.append(Move(mv))
         #max number of moves check
         if len(self.moves)>self.MaxMoves:
             #request user which move to drop
+            askInput.askInput("",self.Name+" is trying to learn a new move but it must forget one.\n Press Enter to continue")
+            os.system("cls")
             errmsg=["You must provide a number","You must choose a value among the specified ones"]
             msg="choose a move to forget:\n"+self.movesDisp()
-            drop=askInput.inputLoop("int",msg,errmsg,[1,2,3,4,5])-1
+            drop=askInput.inputLoop("int",msg,errmsg,[0,1,2,3,4])
             self.dropMove(drop)
     
     #removes the move in position "drop" from moves list 
