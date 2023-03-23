@@ -1,4 +1,5 @@
-Daniele Andrean PhD student @DEI supervisor: prof. Morten Gram Pedersen
+Daniele Andrean PhD student @DEI 
+supervisor: prof. Morten Gram Pedersen
 
 Run the main.py file to test the program.
 
