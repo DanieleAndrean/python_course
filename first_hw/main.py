@@ -64,7 +64,14 @@ def main():
     print(Tr.PokeDisp())
     askInput("","press Enter to continue:")
     os.system("cls")
-    #combat simulaiton
+
+    for i in range(len(Tr.PokemonList)-1):
+        Tr.PokemonList[i+1].decHP(Tr.PokemonList[i+1].showHP())
+        """print(str(Tr.PokemonList[i+1].isKO()))
+    
+    askInput("","press Enter to continue:")
+    os.system("cls")"""
+    #combat simulation
     pk=next(poke for poke in PkList if poke["name"] == "squirtle")
     enemyPk=Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]])
 

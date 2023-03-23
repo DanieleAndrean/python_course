@@ -29,8 +29,8 @@ class Trainer:
     #Returns true if the trainer has available pokemons i.e. pokemon not KO
     def hasPokemons(self):
         
-        for i in range(len(self.PokemonList)):
-            if(not self.PokemonList[i].isKO()):
+        for i in self.PokemonList:
+            if(not i.isKO()):
                 return True
         return False
         
