@@ -5,11 +5,35 @@ from Trainer import *
 from Pokemon import *
 
 class Story(State):
+    def __init__(self,name,Trainer,choice):
+        super().__init__(name,Trainer)
+        self.choice=choice
+    
     def run(self):
-        pass
         
-    def update(self,):
-        pass
+        reqmsg=("What do you want to do next?: \n\n"+
+            "1: Explore\t\t"+
+            "2: Go to Pokemon Center\n\n"+
+            "3: Go to Pokemon Store\t\t"+
+            "4: Quit Game")
+        errms=["You must insert a number","You can only choose between the provided options"]
+        self.choice=inputLoop("int",reqmsg,errms,[1,2,3,4])
+        os.system("cls")
+        
+    def update(self,choices):
+       
+        match self.choice:
+            case 1:
+                return explore
+            case 2:
+                return pokemonCenter
+            case 3:
+                return pokemonStore
+            case 4:
+                return quitGame
+            case _:
+                raise Exception("Unknown state")
+            
         
     def __str__(self):
         return self.name
@@ -20,39 +44,36 @@ class Story(State):
 
 class CharCreate(State):
 
-    def run(self,**kwargs):
+    def __init__(self,name,Trainer,Starters,Items):
+        super().__init__(name,Trainer)
+        self.Starters=Starters
+        self.Items=Items
+    def run(self):
         # Username request
         errms=["Name must contain at least a letter, press Enter to retry: \n",""]
         trName=inputLoop("str","write your name: \n",errms)
         os.system("cls")
-    
-        #Trainer generation
-        Tr=Trainer(trName)
-        Starters=[]
-        
-        #Starters
-        pk=next(poke for poke in PkList if poke["name"] == "bulbasaur")
-        Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
-                        
-        pk=next(poke for poke in PkList if poke["name"] == "charmander")
-        Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
-        
-        pk=next(poke for poke in PkList if poke["name"] == "squirtle")
-        Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
-        
         #Starter Pokemon choice
-        reqmsg="Select your first pokemon among the following: \n\n"+"1: "+str(Starters[0])+"2: "+str(Starters[1])+"3: "+str(Starters[2])
+        reqmsg=("Select your first pokemon among the following: \n\n"+
+                "1: "+str(self.Starters[0])+
+                "2: "+str(self.Starters[1])+
+                "3: "+str(self.Starters[2])
+                )
         errms=["You must insert a number","You can only choose between the provided options"]
-        okInput=False
         FirstPoke=inputLoop("int",reqmsg,errms,[1,2,3])-1
         os.system("cls")
+        #Trainer generation
+        self.Trainer=Trainer(trName,[],[])
+        
         #adding Starter
-        Tr.addPokemon(Starters[FirstPoke])
-
+        self.Trainer.addPokemon(self.Starters[FirstPoke])
+        #adding initial items
+        for i in self.Items:
+            self.Trainer.addItem(i)
     
         
-    def update(self,):
-        pass
+    def update(self,choices):
+        return story
         
     def __str__(self):
         return self.name

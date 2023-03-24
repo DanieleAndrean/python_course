@@ -137,7 +137,7 @@ class FiniteStateMachine:
 # Template of the State class for the FSM
 class State:
 
-    def __init__(self, name=None, Trainer=None):
+    def __init__(self, name, Trainer):
         self.name = name
         self.Trainer=Trainer
         

@@ -1,11 +1,42 @@
 import askInput
 import os
+import copy
+
+class Item:
+    def __init__(self,itDict,quantity):
+        self.name=itDict["name"]
+        self.quantity=quantity
+        self.maxNum=itDict["maxNum"]
+    
+    def __str__(self):
+
+        itstr="Item:\t"+self.name+"\tQuantity:\t"+str(self.quantity)
+        return itstr
+    #increases the Item quantity by the specified number
+    def incIt(self,numOb):
+        self.quantity+=numOb
+        if self.quantity>self.maxNum:
+            self.quantity=self.maxNum
+    
+    #decreases the Item quantity by the specified number
+    def decIt(self,numOb):
+
+        self.quantity-=numOb
+    
+    #returns the Item's quantity
+    def getNumIt(self):
+
+        return copy.deepcoy(self.quantity)
+    
+#######################################################################################
+################### TRAINER CLASS #####################################################
+#######################################################################################
 class Trainer:
-    def __init__(self,name):
+    def __init__(self,name,Pokemons,Items):
         self.name=name
         self.MaxPokemons=6
-        self.PokemonList=[]
-        self.Items=[]
+        self.PokemonList=Pokemons
+        self.Items=Items
 
 
     #returns a string to display the current Pokemons owned
@@ -53,4 +84,11 @@ class Trainer:
     def dropPokemon(self,drop):
         self.PokemonList.pop(drop)
 
+    def addItem(self,Item):
+
+        self.Items.append(Item)
+
+    def dropItem(self,Itemidx):
+
+        self.Items.pop[Itemidx]
     
