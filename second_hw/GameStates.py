@@ -5,9 +5,9 @@ from Trainer import *
 from Pokemon import *
 
 class Story(State):
-    def __init__(self,name,Trainer,choice):
+    def __init__(self,name,Trainer,usrchoice):
         super().__init__(name,Trainer)
-        self.choice=choice
+        self.usrchoice=usrchoice
     
     def run(self):
         
@@ -17,23 +17,23 @@ class Story(State):
             "3: Go to Pokemon Store\t\t"+
             "4: Quit Game")
         errms=["You must insert a number","You can only choose between the provided options"]
-        self.choice=inputLoop("int",reqmsg,errms,[1,2,3,4])
+        self.usrchoice=inputLoop("int",reqmsg,errms,[1,2,3,4])
         os.system("cls")
         
     def update(self,choices):
        
-        match self.choice:
+        match self.usrchoice:
             case 1:
-                return explore
+                ch="Explore"
             case 2:
-                return pokemonCenter
+                ch="Pokemon Center"
             case 3:
-                return pokemonStore
+                ch="Pokemon Store"
             case 4:
-                return quitGame
+                ch="Quit Game"
             case _:
                 raise Exception("Unknown state")
-            
+        return next(st for st in choices if st.name==ch ) 
         
     def __str__(self):
         return self.name
@@ -73,7 +73,7 @@ class CharCreate(State):
     
         
     def update(self,choices):
-        return story
+        return choices[0]
         
     def __str__(self):
         return self.name

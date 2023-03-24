@@ -65,7 +65,6 @@ def main():
    # plt.figure(1)
    # Game.draw()
 
-    Starters=[]
         
     
 
