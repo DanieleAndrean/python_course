@@ -96,7 +96,7 @@ class Trainer:
             UserInput.askInput("","you are trying to catch a new Pokemon but you must free one.\nPress Enter to continue:")
             os.system("cls")
             errmsg=["You must provide a number","You must choose a value among the specified ones"]
-            msg="choose a Pokemon to free:\n"+self.PokeDisp()
+            msg="Choose a Pokemon to release:\n"+self.showPokemons()
             drop=UserInput.inputLoop("int",msg,errmsg,[0,1,2,3,4,5,6])
             self.dropPokemon(drop)
     
