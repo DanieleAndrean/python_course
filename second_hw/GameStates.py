@@ -1,16 +1,64 @@
-from FSM import State
+from FSM import State, FiniteStateMachine
 import os
-from askInput import *
+from UserInput import inputLoop, askInput
 from Trainer import *
 from Pokemon import *
+from Combat import combat
+from PokeList import PkList
+from MovesList import MvList
 
-class Story(State):
+#########################################################################################
+#                               CUSTOM STATE AND FSM                                    #
+#########################################################################################
+#redefeinition of the FSM class to override the update method
+class GameEngine(FiniteStateMachine):
+     # Method to identify the next transition of the FSM using the state update method
+     # CHANGES COMPARED TO FiniteStateMachine:
+     # -target state Trainer is updated with the current state trainer
+    def update(self, *args, update='update', **kargs):
+        choices = self.possible_transitions()
+        if not choices:
+            print("No transition possible, game engine halting.")
+            return None
+        elif len(choices) == 1:
+            nextState=choices[0]
+            nextState.setTrainer(self.state.getTrainer())
+            return nextState
+        elif callable(getattr(self.state, update, None)):
+            method = getattr(self.state, update, None)
+            nextState=method(choices, *args, **kargs)
+            nextState.setTrainer(self.state.getTrainer())
+            return nextState
+        else:
+            print("Update rule is undefined, game engine halting.")
+            return None
+
+# State with trainer attribute
+class GameState(State):
+    def __init__(self,name,Trainer):
+        super().__init__(name)
+        self.Trainer=Trainer
+
+    #set the trainer
+    def setTrainer(self,Trainer):
+        self.Trainer=Trainer
+    
+    #return a deep copy of the trainer
+    def getTrainer(self):
+        return copy.deepcopy(self.Trainer)
+    
+
+##############################################################################
+#                            STORY
+# ############################################################################    
+class Story(GameState):
     def __init__(self,name,Trainer,usrchoice):
         super().__init__(name,Trainer)
         self.usrchoice=usrchoice
     
     def run(self):
-        
+        print("Trainer: "+str(self.Trainer))
+        print("Pokemons: "+self.Trainer.showPokemons())
         reqmsg=("What do you want to do next?: \n\n"+
             "1: Explore\t\t"+
             "2: Go to Pokemon Center\n\n"+
@@ -33,6 +81,7 @@ class Story(State):
                 ch="Quit Game"
             case _:
                 raise Exception("Unknown state")
+        
         return next(st for st in choices if st.name==ch ) 
         
     def __str__(self):
@@ -40,14 +89,18 @@ class Story(State):
     
     def __repr__(self):
         return str(self)
-    
 
-class CharCreate(State):
+##############################################################################
+#                        CHARACTER CREATION
+# ############################################################################    
+
+class CharCreate(GameState):
 
     def __init__(self,name,Trainer,Starters,Items):
         super().__init__(name,Trainer)
         self.Starters=Starters
         self.Items=Items
+
     def run(self):
         # Username request
         errms=["Name must contain at least a letter, press Enter to retry: \n",""]
@@ -71,39 +124,101 @@ class CharCreate(State):
         for i in self.Items:
             self.Trainer.addItem(i)
     
+    # the update method is not needed as only one transition is possible and will be handled by the game engine
+        
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return str(self)
+
+
+##############################################################################
+#                             TRAVEL
+# ############################################################################    
+
+# handles Pokemon Store, Pokemon Center and Exploration states
+class Travel(GameState):
+
+    def __init__(self,name,Trainer):
+        super().__init__(name,Trainer)
+        self.combatFlag=False
+
+    def run(self):
+        match self.name:
+            # explore and eventually encounter pokemons
+            case 'Explore':
+                prob=random.random()
+                encounterProb=0.8
+                if encounterProb>prob:
+                    self.combatFlag=True
+                    print("Something approaches you from the tall grass!!!")
+                    
+                else:
+                    print("Nothing happened during your exploration")
+                
+                askInput("","\nPress Enter to continue...")
+            
+            # heal pokemons, restore moves PPs
+            case 'Pokemon Center':
+                for pk in self.Trainer.PokemonList:
+                    pk.heal()
+                    for mv in pk.moves:
+                        mv.restorePP()
+
+                print("Your Pokemons have been healed!!")
+                askInput("","\nPress Enter to continue...")
+                os.system("cls")
+            # restore items  
+            case 'Pokemon Store':
+                for it in self.Trainer.Items:
+                    it.restore()
+                print("Your Items have been restocked!!")
+                askInput("","\nPress Enter to continue...")
+                os.system("cls")
+            case _:
+                raise Exception("Undefined state")
+            
+    # always returns Story if there is no combat 
+    def update(self,choices):
+        if (self.name=="Explore") and self.combatFlag:
+            self.combatFlag=False
+            nextSt=next(st for st in choices if st.name=="Wild Pokemon Encounter")
+        else:
+            nextSt=next(st for st in choices if st.name=="Story") 
+        return nextSt
+        
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return str(self)
+    
+##############################################################################
+#                        WILD POKEMON ENCOUNTER
+# ############################################################################    
+
+
+class WildEncounter(GameState):
+
+    def __init__(self,name,Trainer):
+        super().__init__(name,Trainer)
+        self.exitcond=None
+    
+    def run(self):
+
+        #generate enemy pk
+        pk=random.choice(PkList)
+        enemyPk=Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]])
+        print("A wild Pokemon approches you: \n\n"+ str(enemyPk))
+        askInput("","\nPress Enter to continue...")
+        self.exitcond=combat(self.Trainer,enemyPk)
         
     def update(self,choices):
-        return choices[0]
+        if self.exitcond=="Def":
+            return next(st for st in choices if st.name=="Pokemon Center") 
         
-    def __str__(self):
-        return self.name
-    
-    def __repr__(self):
-        return str(self)
-
-
-    
-class Travel(State):
-
-    def run(self):
-        pass
-        
-    def update(self,):
-        pass
-        
-    def __str__(self):
-        return self.name
-    
-    def __repr__(self):
-        return str(self)
-    
-
-class WildEncounter(State):
-    def run(self):
-        pass
-        
-    def update(self,):
-        pass
+        return next(st for st in choices if st.name=="Story") 
         
     def __str__(self):
         return self.name

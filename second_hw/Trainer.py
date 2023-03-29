@@ -1,4 +1,4 @@
-import askInput
+import UserInput
 import os
 import copy
 
@@ -13,10 +13,15 @@ class Item:
         itstr="Item:\t"+self.name+"\tQuantity:\t"+str(self.quantity)
         return itstr
     #increases the Item quantity by the specified number
-    def incIt(self,numOb):
-        self.quantity+=numOb
-        if self.quantity>self.maxNum:
+    def restore(self,*numOb):
+        #if numOb is not empty
+        if numOb:
+            self.quantity+=numOb[0]
+            if self.quantity>self.maxNum:
+                self.quantity=self.maxNum
+        else:
             self.quantity=self.maxNum
+            
     
     #decreases the Item quantity by the specified number
     def decIt(self,numOb):
@@ -26,7 +31,7 @@ class Item:
     #returns the Item's quantity
     def getNumIt(self):
 
-        return copy.deepcoy(self.quantity)
+        return copy.deepcopy(self.quantity)
     
 #######################################################################################
 ################### TRAINER CLASS #####################################################
@@ -40,7 +45,7 @@ class Trainer:
 
 
     #returns a string to display the current Pokemons owned
-    def PokeDisp(self,*sel):
+    def showPokemons(self,*sel):
         if len(sel)==0: #display all
             pkDisp=""
             for i in range(len(self.PokemonList)):
@@ -56,12 +61,28 @@ class Trainer:
                 raise Exception("No available Pokemons")
             return pkDisp
     
+    def showItems(self,*sel):
+        if len(sel)==0: #display all
+            itDisp=""
+            for i in range(len(self.Items)):
+                itDisp=itDisp+str(i)+": "+str(self.Items[i])+"\n"
+            
+            return itDisp
+        
+        else: #display selected
+            idxs=sel[0]
+            itDisp=""
+            for i in range(len(idxs)):
+                    itDisp=itDisp+str(idxs[i])+": "+str(self.Items[idxs[i]])+"\n"
+            if itDisp=="":
+                raise Exception("No available Pokemons")
+            return itDisp
     
     #Returns true if the trainer has available pokemons i.e. pokemon not KO
     def hasPokemons(self):
         
         for i in self.PokemonList:
-            if(not i.isKO()):
+            if not i.isKO():
                 return True
         return False
         
@@ -72,11 +93,11 @@ class Trainer:
         #max number of Pokemons check
         if len(self.PokemonList)>self.MaxPokemons:
             #request user which Pokemon to drop 
-            askInput.askInput("","you are trying to catch a new Pokemon but you must free one.\nPress Enter to continue:")
+            UserInput.askInput("","you are trying to catch a new Pokemon but you must free one.\nPress Enter to continue:")
             os.system("cls")
             errmsg=["You must provide a number","You must choose a value among the specified ones"]
             msg="choose a Pokemon to free:\n"+self.PokeDisp()
-            drop=askInput.inputLoop("int",msg,errmsg,[0,1,2,3,4,5,6])
+            drop=UserInput.inputLoop("int",msg,errmsg,[0,1,2,3,4,5,6])
             self.dropPokemon(drop)
     
 

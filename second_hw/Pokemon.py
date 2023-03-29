@@ -1,5 +1,5 @@
 import copy
-import askInput
+import UserInput
 import random
 import math
 import os
@@ -18,6 +18,8 @@ class baseStats:
         self.speed=speed
         self.special=special
 
+    def getMaxHP(self):
+        return copy.deepcopy(self.hp)
 
 #################################################
 ############### MOVE CLASS ###################
@@ -30,11 +32,21 @@ class Move:
         self.category=moveDict["category"]
         self.power=moveDict["power"]
         self.accuracy=moveDict["accuracy"]
-        self.pp=moveDict["pp"]
+        self.maxPP=moveDict["pp"]
+        self.pp=self.maxPP
 
     def decPP(self):
         self.pp-=1
 
+    def restorePP(self,*numPP):
+        #if numPP is not empty
+        if numPP:
+            self.pp+=numPP[0]
+            if self.pp>self.maxPP:
+                self.pp=self.maxPP
+        else:
+            self.pp=self.maxPP
+        
     def getPP(self):
         return copy.deepcopy(self.pp)
     
@@ -109,11 +121,11 @@ class Pokemon:
         #max number of moves check
         if len(self.moves)>self.MaxMoves:
             #request user which move to drop
-            askInput.askInput("",self.Name+" is trying to learn a new move but it must forget one.\n Press Enter to continue")
+            UserInput.askInput("",self.Name+" is trying to learn a new move but it must forget one.\n Press Enter to continue")
             os.system("cls")
             errmsg=["You must provide a number","You must choose a value among the specified ones"]
             msg="choose a move to forget:\n"+self.movesDisp()
-            drop=askInput.inputLoop("int",msg,errmsg,[0,1,2,3,4])
+            drop=UserInput.inputLoop("int",msg,errmsg,[0,1,2,3,4])
             self.dropMove(drop)
     
     #removes the move in position "drop" from moves list 
@@ -123,11 +135,22 @@ class Pokemon:
 
     #decrease current HP by the specified amount
     def decHP(self,HPloss):
-        if self.currentHP>HPloss:
-            self.currentHP-=HPloss
-        else:
+      
+        self.currentHP-=HPloss
+        if self.currentHP<=0:
             self.currentHP=0
             self.KO=True
+
+    def heal(self,*quantity):
+        #if quantity is not empty
+        if quantity:
+            self.currentHP+=quantity[0]
+            if self.currentHP>self.baseStats.hp:
+                self.currentHP=self.baseStats.hp
+        else:
+            self.currentHP=self.baseStats.hp
+            self.KO=False
+            
 
     #uses the selected move and resolves it effects
     def useMove(self,mv,target):

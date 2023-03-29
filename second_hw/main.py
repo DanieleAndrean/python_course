@@ -1,10 +1,9 @@
-from askInput import askInput, inputLoop
+from UserInput import askInput, inputLoop
 from Trainer import Trainer
 from Pokemon import Pokemon
 from PokeList import PkList
 from MovesList import MvList
 from ItemsList import ItList
-from FSM import FiniteStateMachine
 from GameStates import *
 import matplotlib.pyplot as plt
 
@@ -30,14 +29,14 @@ def main():
     it=next(itm for itm in ItList if itm["name"]=="Health Potion")
     StartItm.append(Item(it,it["maxNum"]))
 
-    cc = CharCreate('Character Creation',[],Starters,StartItm)
+    cc = CharCreate('Character Creation',None,Starters,StartItm)
     story= Story('Story',None,None)
     explore= Travel('Explore',None)
     pokeStore=Travel("Pokemon Store",None)
     pokeCenter=Travel("Pokemon Center",None)
     wildPk=WildEncounter("Wild Pokemon Encounter",None)
-    quitGame=State("Quit Game",None)
-    Game = FiniteStateMachine()
+    quitGame=GameState("Quit Game",None)
+    Game = GameEngine()
     
     Game.add_state(cc)
     Game.add_state(story)
@@ -62,10 +61,6 @@ def main():
     Game.set_start_state(cc)
     Game.add_final_state(quitGame)
     Game.initialize()
-   # plt.figure(1)
-   # Game.draw()
-
-        
     
 
     while Game.state not in Game.final_states:
@@ -74,4 +69,6 @@ def main():
         target=Game.update()
         Game.do_transition(target, Game.get_transition_attributes(target))
 
-main()
+
+if __name__=="__main__":
+    main()

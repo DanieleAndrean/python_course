@@ -25,13 +25,6 @@ MvList=[    {"name": "tackle",
                     "power": 40, 
                     "accuracy": 1.0, 
                     "pp": 25},
-            
-            {"name": "tackle", 
-             "type": "normal", 
-             "category": "physical",
-             "power": 35, 
-             "accuracy": 0.95, 
-             "pp": 35},
 
              {"name": "peck", 
               "type": "flying",

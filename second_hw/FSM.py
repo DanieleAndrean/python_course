@@ -1,6 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-
+import copy
 class FiniteStateMachine:
     def __init__(self):
         self.G = nx.MultiDiGraph()
@@ -137,9 +137,8 @@ class FiniteStateMachine:
 # Template of the State class for the FSM
 class State:
 
-    def __init__(self, name, Trainer):
+    def __init__(self, name):
         self.name = name
-        self.Trainer=Trainer
         
     # Method to perform the operation of the current state of the FSM
     # (used by .eval_current() method of the FSM)
