@@ -84,7 +84,7 @@ def combat(Trainer,enemyPk):
             print("Congratulations, you have a new Pokemon!!!")
             exitcon="Cgt"
         case "Escaped":
-            #message already in the state run()
+            print("You successfully escaped!!")
             exitcon="Esc"
         
     askInput("","\nPress Enter to continue...")
