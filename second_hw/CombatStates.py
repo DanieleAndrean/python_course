@@ -244,9 +244,9 @@ class Flee(State):
             else:
                 print("You were not able to escape!!")
                 self.escapeFail=True
-
-        askInput("","Press Enter to continue...")
-        os.system("cls")        
+                askInput("","Press Enter to continue...")
+                os.system("cls") 
+               
 
                 
     def update(self,choices,**fighters):
