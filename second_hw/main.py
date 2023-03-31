@@ -56,7 +56,7 @@ def main():
     Game.add_transition(pokeStore, story)    
     Game.add_transition(story, pokeCenter)  
     Game.add_transition(pokeCenter, story)
-    Game.add_transition(story,quitGame)    
+    Game.add_transition(story,quitGame)
     
     Game.set_start_state(cc)
     Game.add_final_state(quitGame)
@@ -67,8 +67,7 @@ def main():
 
         Game.eval_current()
         target=Game.update()
-        Game.do_transition(target, Game.get_transition_attributes(target))
-
+        Game.do_transition(target) 
 
 if __name__=="__main__":
     main()
