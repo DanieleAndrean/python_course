@@ -1,8 +1,8 @@
-from FSM import State
+from GameEng.FSM import State
 import os
 from UserInput import *
-from Trainer import *
-from Pokemon import *
+from GameClasses.Trainer import *
+from GameClasses.Pokemon import *
 
 #################################################################
 #                       COMBAT MENU                             #

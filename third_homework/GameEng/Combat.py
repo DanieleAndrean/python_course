@@ -1,9 +1,7 @@
-import os
 from UserInput import *
-import random
-from FSM import FiniteStateMachine, State
-from CombatStates import *
-import matplotlib.pyplot as plt
+from GameEng.FSM import FiniteStateMachine, State
+from GameEng.CombatStates import *
+
 #################################Combat handling funciton##############################################
 def combat(Trainer,enemyPk):
    

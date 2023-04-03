@@ -1,22 +1,27 @@
 from UserInput import askInput, inputLoop
-import GameClasses
-import GameEng
-import PokeData
+from GameClasses.Pokemon import Pokemon
+from GameClasses.Item import Item
+from GameEng.GameStates import *
+from PokeData.load import PkList,MvList
+from PokeData.ItemsList import ItList
 import matplotlib.pyplot as plt
-
+import random
 
 
 def main():           
     #Starters
     Starters=[]
     pk=next(poke for poke in PkList if poke["name"] == "bulbasaur")
-    Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
+    mv=random.sample([m for m in MvList if m["type"] in pk["types"] or m["type"]=="normal"],2)
+    Starters.append(Pokemon(pk, mv))
                     
     pk=next(poke for poke in PkList if poke["name"] == "charmander")
-    Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
+    mv=random.sample([m for m in MvList if m["type"] in pk["types"] or m["type"]=="normal"],2)
+    Starters.append(Pokemon(pk, mv))
     
     pk=next(poke for poke in PkList if poke["name"] == "squirtle")
-    Starters.append(Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]]))
+    mv=random.sample([m for m in MvList if m["type"] in pk["types"] or m["type"]=="normal"],2)
+    Starters.append(Pokemon(pk, mv))
 
     #Starting items
     StartItm=[]

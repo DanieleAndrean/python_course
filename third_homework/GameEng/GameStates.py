@@ -1,11 +1,11 @@
-from FSM import State, FiniteStateMachine
+import copy
+from GameClasses.Trainer import *
+from GameEng.FSM import State, FiniteStateMachine
 import os
 from UserInput import inputLoop, askInput
-from Trainer import *
-from Pokemon import *
-from Combat import combat
-from PokeList import PkList
-from MovesList import MvList
+from GameClasses.Pokemon import *
+from GameEng.Combat import combat
+from PokeData.load import PkList,MvList
 
 #########################################################################################
 #                               CUSTOM STATE AND FSM                                    #
@@ -209,7 +209,7 @@ class WildEncounter(GameState):
 
         #generate enemy pk
         pk=random.choice(PkList)
-        enemyPk=Pokemon(pk, [mv for mv in MvList if mv["name"] in pk["moves"]])
+        enemyPk=Pokemon(pk, random.sample([mv for mv in MvList if mv["type"] in pk["types"] or mv["type"]=="normal"],2))
         print("A wild Pokemon approches you: \n\n"+ str(enemyPk))
         askInput("","\nPress Enter to continue...")
         self.exitcond=combat(self.Trainer,enemyPk)
