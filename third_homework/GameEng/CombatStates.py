@@ -266,41 +266,85 @@ class Flee(State):
 #################################################################################
 
 class EnemyTurn(State):
+    def __init__(self,name,**tstargs):
+        super().__init__(name)
+        self.testMode=False
+        if tstargs:
+            self.testMode=tstargs["testMode"]
 
     def run(self,**fighters):
         Trainer=fighters["Trainer"]
         enemyPk=fighters["enemyPk"]
 
-        print("Enemy turn /!\\ \n\n")
-        askInput("","Press Enter to continue:")
-        os.system("cls")
+        if(not self.testMode):
+            print("Enemy turn /!\\ \n\n")
+            askInput("","Press Enter to continue:")
+            os.system("cls")
     
         #randomly selected move from available ones (PP>0)
         availMoves=enemyPk.availMoves()
-        mv=random.choice(availMoves)
-        print(enemyPk.Name+" uses "+enemyPk.moves[mv].name)
+        if(availMoves):
+            mv=random.choice(availMoves)
+       
+            if(not self.testMode):
+                print(enemyPk.Name+" uses "+enemyPk.moves[mv].name)
 
-        #attack success check
-        if enemyPk.useMove(mv,Trainer.PokemonList[0]):
-            
-            print("attack succeded!! \n\n")
-            print("enemy HP: "+str(enemyPk.showHP())+"\n\n")
-            print("your Pokemon HP: "+str(Trainer.PokemonList[0].showHP()))
+            #attack success check
+            if enemyPk.useMove(mv,Trainer.PokemonList[0]):
+                if(not self.testMode):
+                    print("attack succeded!! \n\n")
+                    print("enemy HP: "+str(enemyPk.showHP())+"\n\n")
+                    print("your Pokemon HP: "+str(Trainer.PokemonList[0].showHP()))
+            else:
+                if(not self.testMode):
+                    print("attack missed")
+            if(not self.testMode):
+                askInput("","\nPress Enter to continue:")
+                os.system("cls")
         else:
-            print("attack missed")
-
-        askInput("","\nPress Enter to continue:")
-        os.system("cls")
-        
+            pass
     
     def update(self,choices,**fighters):
     
         Trainer=fighters["Trainer"]
         enemyPk=fighters["enemyPk"]
+        
         if enemyPk.isKO():
             return next(st for st in choices if st.name=="Victory")
         if(not Trainer.hasPokemons()):
             return next(st for st in choices if st.name=="Defeat")
-        if(Trainer.PokemonList[0].isKO() and Trainer.hasPokemons()):
-            return next(st for st in choices if st.name=="Change Pokemon")
+        if(not self.testMode):
+            if(Trainer.PokemonList[0].isKO() and Trainer.hasPokemons()):
+                return next(st for st in choices if st.name=="Change Pokemon")
+            
         return next(st for st in choices if st.name=="Combat Menu")
+    
+
+#####################################################################################
+#                       TEST
+#####################################################################################
+
+class TestCbt(State):
+
+    def run(self,**fighters):
+        Trainer=fighters["Trainer"]
+        enemyPk=fighters["enemyPk"]
+
+        availMoves=Trainer.PokemonList[0].availMoves()
+        if availMoves:
+            mv=random.choice(availMoves)
+  
+            Trainer.PokemonList[0].useMove(mv,enemyPk)
+        else:
+            pass
+
+    def update(self,choices,**fighters):
+        
+        Trainer=fighters["Trainer"]
+        enemyPk=fighters["enemyPk"]
+
+        if enemyPk.isKO():
+            return next(st for st in choices if st.name=="Victory")
+        if(not Trainer.hasPokemons()):
+            return next(st for st in choices if st.name=="Defeat")
+        return next(st for st in choices if st.name=="Enemy Turn")

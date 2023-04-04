@@ -3,7 +3,7 @@ import os
 
 datapath=os.path.dirname(__file__)
 PkList = []
-MvList=[]
+MvsList=[]
 TypEffList=[]
 with open(datapath+"\pokemons.json", 'r') as pkfile: # open the file containing the data
     for line in pkfile:
@@ -13,7 +13,10 @@ with open(datapath+"\pokemons.json", 'r') as pkfile: # open the file containing 
 with open(datapath+"\moves.json","r") as mvFile:
     for line in mvFile:
         m=json.loads(line)
-        MvList.append(m)
+        MvsList.append(m)
+
+MvList=[mv for mv in MvsList if (not mv["power"]==None and not mv["accuracy"]==None and not mv["pp"]==None)]
+
 
 with open(datapath+"\\type_effectiveness.json","r") as teFile:
     for line in teFile:

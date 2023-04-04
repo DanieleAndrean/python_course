@@ -140,17 +140,18 @@ class CharCreate(GameState):
 # handles Pokemon Store, Pokemon Center and Exploration states
 class Travel(GameState):
 
-    def __init__(self,name,Trainer):
+    def __init__(self,name,Trainer,**kwargs):
         super().__init__(name,Trainer)
         self.combatFlag=False
+        self.EncounterProb=kwargs["EncounterProb"]
 
     def run(self):
         match self.name:
             # explore and eventually encounter pokemons
             case 'Explore':
                 prob=random.random()
-                encounterProb=0.8
-                if encounterProb>prob:
+                
+                if self.EncounterProb>prob:
                     self.combatFlag=True
                     print("Something approaches you from the tall grass!!!")
                     

@@ -1,8 +1,10 @@
 import copy
+import numpy as np
 import UserInput
 import random
 import math
 import os
+from PokeData.load import TypEffList
 class baseStats:
     def __init__(self,bsDict):
         self.hp=bsDict["hp"]
@@ -173,7 +175,8 @@ class Pokemon:
             else:
                 stability=1
         
-            effect=1
+            effect=np.prod([eff["effectiveness"] for eff in TypEffList 
+                            if eff["attack"]==selMove.type and eff["defend"] in target.Types])
             #critical modifier calculation
             if random.random()<self.baseStats.speed/512:
                 critical=2

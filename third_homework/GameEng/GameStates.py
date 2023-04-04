@@ -4,7 +4,7 @@ from GameEng.FSM import State, FiniteStateMachine
 import os
 from UserInput import inputLoop, askInput
 from GameClasses.Pokemon import *
-from GameEng.Combat import combat
+from GameEng.Combat import combatTest,combat
 from PokeData.load import PkList,MvList
 
 #########################################################################################
@@ -32,6 +32,7 @@ class GameEngine(FiniteStateMachine):
         else:
             print("Update rule is undefined, game engine halting.")
             return None
+
 
 # State with trainer attribute
 class GameState(State):
@@ -140,24 +141,32 @@ class CharCreate(GameState):
 # handles Pokemon Store, Pokemon Center and Exploration states
 class Travel(GameState):
 
-    def __init__(self,name,Trainer):
+    def __init__(self,name,Trainer,**tstargs):
         super().__init__(name,Trainer)
         self.combatFlag=False
+        self.testMode=False
+        self.EncounterProb=0.8
+        if "EncounterProb" in tstargs:
+            self.EncounterProb=tstargs["EncounterProb"]
+        if "testMode" in tstargs:
+            self.testMode=tstargs["testMode"]
 
-    def run(self):
+    def run(self,**tstargs):
         match self.name:
             # explore and eventually encounter pokemons
             case 'Explore':
                 prob=random.random()
-                encounterProb=0.8
-                if encounterProb>prob:
+              
+                if self.EncounterProb>prob:
                     self.combatFlag=True
-                    print("Something approaches you from the tall grass!!!")
+                    if not self.testMode:
+                        print("Something approaches you from the tall grass!!!")
                     
                 else:
-                    print("Nothing happened during your exploration")
-                
-                askInput("","\nPress Enter to continue...")
+                    if not self.testMode:
+                        print("Nothing happened during your exploration")
+                if not self.testMode:
+                    askInput("","\nPress Enter to continue...")
             
             # heal pokemons, restore moves PPs
             case 'Pokemon Center':
@@ -165,10 +174,10 @@ class Travel(GameState):
                     pk.heal()
                     for mv in pk.moves:
                         mv.restorePP()
-
-                print("Your Pokemons have been healed!!")
-                askInput("","\nPress Enter to continue...")
-                os.system("cls")
+                if not self.testMode:
+                    print("Your Pokemons have been healed!!")
+                    askInput("","\nPress Enter to continue...")
+                    os.system("cls")
             # restore items  
             case 'Pokemon Store':
                 for it in self.Trainer.Items:
@@ -180,7 +189,7 @@ class Travel(GameState):
                 raise Exception("Undefined state")
             
     # always returns Story if there is no combat 
-    def update(self,choices):
+    def update(self,choices,**tstargs):
         if (self.name=="Explore") and self.combatFlag:
             self.combatFlag=False
             nextSt=next(st for st in choices if st.name=="Wild Pokemon Encounter")
@@ -196,29 +205,59 @@ class Travel(GameState):
     
 ##############################################################################
 #                        WILD POKEMON ENCOUNTER
-# ############################################################################    
+##############################################################################    
 
 
 class WildEncounter(GameState):
 
-    def __init__(self,name,Trainer):
+    def __init__(self,name,Trainer,**tstarg):
         super().__init__(name,Trainer)
         self.exitcond=None
+        self.testMode=False
+        if tstarg:
+            self.testMode=tstarg["testMode"]
     
-    def run(self):
+    def run(self,**tstargs):
 
         #generate enemy pk
         pk=random.choice(PkList)
         enemyPk=Pokemon(pk, random.sample([mv for mv in MvList if mv["type"] in pk["types"] or mv["type"]=="normal"],2))
-        print("A wild Pokemon approches you: \n\n"+ str(enemyPk))
-        askInput("","\nPress Enter to continue...")
-        self.exitcond=combat(self.Trainer,enemyPk)
+        if not self.testMode:
+            print("A wild Pokemon approches you: \n\n"+ str(enemyPk))
+            askInput("","\nPress Enter to continue...")
+            self.exitcond=combat(self.Trainer,enemyPk)
+        else:
+            ext, stats = combatTest(self.Trainer,enemyPk)
+            self.exitcond=ext
+            self.Trainer.battles.append({"exitcond":ext,**stats})
         
-    def update(self,choices):
+    def update(self,choices,**tstargs):
         if self.exitcond=="Def":
             return next(st for st in choices if st.name=="Pokemon Center") 
         
         return next(st for st in choices if st.name=="Story") 
+        
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return str(self)
+    
+
+#############################################################################
+#                           TEST
+##############################################################################
+class TestStory(GameState):
+    def __init__(self,name,Trainer,maxBattles):
+        super().__init__(name,Trainer)
+        self.maxBattles=maxBattles
+        
+    def update(self,choices,**tstargs):
+       
+        if(tstargs["Battle"]>=self.maxBattles):
+            return next(st for st in choices if st.name=="Quit Game")
+       
+        return next(st for st in choices if st.name=="Wild Pokemon Encounter" ) 
         
     def __str__(self):
         return self.name
