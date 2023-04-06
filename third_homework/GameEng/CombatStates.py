@@ -301,6 +301,9 @@ class EnemyTurn(State):
             if(not self.testMode):
                 askInput("","\nPress Enter to continue:")
                 os.system("cls")
+        elif self.testMode:
+            for mv in  enemyPk.moves:
+                mv.restorePP()
         else:
             pass
     
@@ -336,7 +339,8 @@ class TestCbt(State):
   
             Trainer.PokemonList[0].useMove(mv,enemyPk)
         else:
-            pass
+            for mv in  Trainer.PokemonList[0].moves:
+                mv.restorePP()
 
     def update(self,choices,**fighters):
         

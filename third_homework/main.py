@@ -8,87 +8,91 @@ from PokeData.ItemsList import ItList
 import random
 import numpy as np
 import matplotlib.pyplot as mpl
-def main():
+import pickle
 
+def main():
     
-    nSim=5
-    Nbattles=15
+    nSim=500
+    Nbattles=150
     BulabsaurRes=[]
-    BulabsaurVct=np.empty((nSim,1),dtype=int)
-    BulabsaurTurn=np.empty((nSim,Nbattles),dtype=int)
-    BulabsaurPHP=np.empty((nSim,Nbattles),dtype=float)
+    BulabsaurVct=np.zeros((nSim,1),dtype=int)
+    BulabsaurTurn=np.zeros((nSim,Nbattles),dtype=int)
+    BulabsaurPHP=np.zeros((nSim,Nbattles),dtype=float)
     BulbasaurEneWin=dict()
     CharmanderRes=[]
-    CharmanderVct=np.empty((nSim,1),dtype=int)
-    CharmanderTurn=np.empty((nSim,Nbattles),dtype=int)
-    CharmanderPHP=np.empty((nSim,Nbattles),dtype=float)
+    CharmanderVct=np.zeros((nSim,1),dtype=int)
+    CharmanderTurn=np.zeros((nSim,Nbattles),dtype=int)
+    CharmanderPHP=np.zeros((nSim,Nbattles),dtype=float)
     CharmanderEneWin=dict()
     SquirtleRes=[]
-    SquirtleVct=np.empty((nSim,1),dtype=int)
-    SquirtleTurn=np.empty((nSim,Nbattles),dtype=int)
-    SquirtlePHP=np.empty((nSim,Nbattles),dtype=float)
+    SquirtleVct=np.zeros((nSim,1),dtype=int)
+    SquirtleTurn=np.zeros((nSim,Nbattles),dtype=int)
+    SquirtlePHP=np.zeros((nSim,Nbattles),dtype=float)
     SquirtleEneWin=dict()
+
     for i in range(nSim):
        BulabsaurRes.append(SingleSIm(0,Nbattles))
        j=0
        for b in BulabsaurRes[i].battles:
+            php=b["percHP"]
             vct=(1 if b["exitcond"]=="Vct" else 0)
             try:
-                BulbasaurEneWin[b["enemyPk"]].append(vct)
+                BulbasaurEneWin[b["enemyPk"]].append((vct,php,b["nTurns"]))
             except KeyError:
-                BulbasaurEneWin[b["enemyPk"]] = [vct]
+                BulbasaurEneWin[b["enemyPk"]] = [(vct,php,b["nTurns"])]
             BulabsaurVct[i]+=vct
             BulabsaurTurn[i,j]=b["nTurns"]
-            BulabsaurPHP[i,j]=b["percHP"]
+            BulabsaurPHP[i,j]=php
             j+=1
            
 
        CharmanderRes.append(SingleSIm(1,Nbattles))
        j=0
-       for b in CharmanderRes[i].battles:
-            vct=(1 if b["exitcond"]=="Vct" else 0)
+       for c in CharmanderRes[i].battles:
+            php=c["percHP"]
+            vct=(1 if c["exitcond"]=="Vct" else 0)
             try:
-                CharmanderEneWin[b["enemyPk"]].append(vct)
+                CharmanderEneWin[c["enemyPk"]].append((vct,php,b["nTurns"]))
             except KeyError:
-                CharmanderEneWin[b["enemyPk"]] = [vct]
+                CharmanderEneWin[c["enemyPk"]] = [(vct,php,b["nTurns"])]
             CharmanderVct[i]+=vct
-            CharmanderTurn[i,j]=b["nTurns"]
-            CharmanderPHP[i,j]=b["percHP"]
+            CharmanderTurn[i,j]=c["nTurns"]
+            CharmanderPHP[i,j]=php
             j+=1
 
        SquirtleRes.append(SingleSIm(2,Nbattles))
        j=0
-       for b in SquirtleRes[i].battles:
-            vct=(1 if b["exitcond"]=="Vct" else 0)
+       for s in SquirtleRes[i].battles:
+            php=s["percHP"]
+            vct=(1 if s["exitcond"]=="Vct" else 0)
             try:
-                SquirtleEneWin[b["enemyPk"]].append(vct)
+                SquirtleEneWin[s["enemyPk"]].append((vct,php,b["nTurns"]))
             except KeyError:
-                SquirtleEneWin[b["enemyPk"]] = [vct]
+                SquirtleEneWin[s["enemyPk"]] = [(vct,php,b["nTurns"])]
             SquirtleVct[i]+=vct
-            SquirtleTurn[i,j]=b["nTurns"]
-            SquirtlePHP[i,j]=b["percHP"]
+            SquirtleTurn[i,j]=s["nTurns"]
+            SquirtlePHP[i,j]=php
             j+=1  
     
-    mpl.plot([0,1,2],[np.sum(BulabsaurVct)/nSim,np.sum(CharmanderVct)/nSim,np.sum(SquirtleVct)/nSim],'or')
-    mpl.ylabel("Average win number")
+    
+    with open("BulbasaurRes","wb") as Fout: # open a file in "write byte" mode
+        pickle.dump(BulabsaurRes, Fout) # save the object inside the file
+
+    with open("CharmanderRes","wb") as Fout: # open a file in "write byte" mode
+        pickle.dump(CharmanderRes, Fout) # save the object inside the file
+
+    with open("SquirtleRes","wb") as Fout: # open a file in "write byte" mode
+        pickle.dump(SquirtleRes, Fout) # save the object inside the file 
+
+    
    
-    
-    
-    f,ax1=mpl.subplots()
-    ax1.boxplot((BulabsaurPHP.flatten(), CharmanderPHP.flatten(),SquirtlePHP.flatten()))
-    ax1.set_xticklabels(['Bulbasaur', 'Charmander', 'Squirtle'])
-    ax1.set_ylabel("Percentage of remaining HP")
+
+##########################################################################################################
+#                                        SIMFUNCTION
+#############################################################################################################
 
 
 
-    f,ax2=mpl.subplots()
-    ax2.boxplot((BulabsaurTurn.flatten(), CharmanderTurn.flatten(),SquirtleTurn.flatten()))
-    ax2.set_xticklabels(['Bulbasaur', 'Charmander', 'Squirtle'])
-    ax2.set_ylabel("Number of Turns")
-
-
-
-    mpl.show()
 
 
 def SingleSIm(Starter,Nbattles):           
@@ -166,6 +170,7 @@ def SingleSIm(Starter,Nbattles):
         
 
     return Tr
+
 
 
 if __name__=="__main__":

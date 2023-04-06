@@ -86,8 +86,8 @@
 {"national_pokedex_number": 89, "name": "muk", "types": ["poison"], "baseStats": {"hp": 105, "attack": 105, "defense": 75, "speed": 50, "special": 65}}
 {"national_pokedex_number": 34, "name": "nidoking", "types": ["poison", "ground"], "baseStats": {"hp": 81, "attack": 92, "defense": 77, "speed": 85, "special": 75}}
 {"national_pokedex_number": 31, "name": "nidoqueen", "types": ["poison", "ground"], "baseStats": {"hp": 90, "attack": 82, "defense": 87, "speed": 76, "special": 75}}
-{"national_pokedex_number": 29, "name": "nidoran♀", "types": ["poison"], "baseStats": {"hp": 55, "attack": 47, "defense": 52, "speed": 41, "special": 40}}
-{"national_pokedex_number": 32, "name": "nidoran♂", "types": ["poison"], "baseStats": {"hp": 46, "attack": 57, "defense": 40, "speed": 50, "special": 40}}
+{"national_pokedex_number": 29, "name": "nidoran\u2640", "types": ["poison"], "baseStats": {"hp": 55, "attack": 47, "defense": 52, "speed": 41, "special": 40}}
+{"national_pokedex_number": 32, "name": "nidoran\u2642", "types": ["poison"], "baseStats": {"hp": 46, "attack": 57, "defense": 40, "speed": 50, "special": 40}}
 {"national_pokedex_number": 30, "name": "nidorina", "types": ["poison"], "baseStats": {"hp": 70, "attack": 62, "defense": 67, "speed": 56, "special": 55}}
 {"national_pokedex_number": 33, "name": "nidorino", "types": ["poison"], "baseStats": {"hp": 61, "attack": 72, "defense": 57, "speed": 65, "special": 55}}
 {"national_pokedex_number": 38, "name": "ninetales", "types": ["fire"], "baseStats": {"hp": 73, "attack": 76, "defense": 75, "speed": 100, "special": 100}}
