@@ -75,13 +75,22 @@ def Visualize():
             j+=1  
 
 ############################################FIGURE 1####################################################################
-    mpl.plot([0,1,2],[np.sum(BulbasaurVct)/nSim,np.sum(CharmanderVct)/nSim,np.sum(SquirtleVct)/nSim],'or')
-    mpl.ylabel("Average win number")
-    mpl.title("Average number of victories for each starter")
-    percHParray=np.array([BulbasaurPHP.flatten(), CharmanderPHP.flatten(),SquirtlePHP.flatten()])
-    numTarray=np.array([BulbasaurTurn.flatten(), CharmanderTurn.flatten(),SquirtleTurn.flatten()])
+    mpl.plot(range(nSim),CharmanderVct,'or',markersize="1")
+    mpl.plot(range(nSim),BulbasaurVct,'og',markersize="1")
+    mpl.plot(range(nSim),SquirtleVct,'oc',markersize="1")
+    mpl.plot(range(nSim),np.ones((nSim,1))*np.sum(BulbasaurVct)/nSim,'--g',label="Bulbasaur average victories",linewidth="2")
+    mpl.plot(range(nSim),np.ones((nSim,1))*np.sum(CharmanderVct)/nSim,'--r',label="Charmander average victories",linewidth="2")
+    mpl.plot(range(nSim),np.ones((nSim,1))*np.sum(SquirtleVct)/nSim,'--c',label="Squirtle average victories",linewidth="2") 
+    mpl.legend()
+    mpl.ylabel("Number of victories over 150 battles")
+    mpl.xlabel("Game index")
+    mpl.title("Number of victories for each starter")
+   
 
 ############################################# FIGURE 2 #################################################################
+
+    percHParray=np.array([BulbasaurPHP.flatten(), CharmanderPHP.flatten(),SquirtlePHP.flatten()])
+    numTarray=np.array([BulbasaurTurn.flatten(), CharmanderTurn.flatten(),SquirtleTurn.flatten()])
     f,ax1=mpl.subplots()
     ax1.boxplot(percHParray.flatten(),positions=[1])
     ax2=mpl.twinx(ax1)
@@ -133,43 +142,44 @@ def Visualize():
         Bperwin[idx]=Bperwin[idx]/len(v)*100
         idx+=1
 
-    Beasy=[id for id in range(len(BulbasaurEneWin)) if 
-           70<=Bperwin[id] and BmnHP[id]>=70]
-    if not Beasy:
-        Beasy=[1,10,20]
-    Bhard=[id for id in range(len(BulbasaurEneWin)) if 
-           50<=Bperwin[id]<=70 and np.mean(Bturn[id])>=medianT]
+    Beasy=np.array([id for id in range(len(BulbasaurEneWin)) if 
+           70<=Bperwin[id] and BmnHP[id]>=70])
+    
+    Bhard=np.array([id for id in range(len(BulbasaurEneWin)) if 
+           50<=Bperwin[id]<=70 and np.mean(Bturn[id])>=medianT])
 
     Bks=np.array(list(BulbasaurEneWin.keys()))
-    Bks_clean=[Bks[i] if (i in Beasy or i in Bhard) else "" for i in range(npk) ]
-    tks=np.array(range(npk))
+    Bks_clean=np.array([Bks[i] if (i in Beasy or i in Bhard) else "" for i in range(npk) ])
+    tks=np.array(range(len(Beasy)+len(Bhard)))
 
-
+    meaningful=np.sort(np.concatenate((Beasy,Bhard)))
     mpl.figure()
-   
+    
     txt=("RED: skilled user suitable Pokemons\n"+
         "GREEN: unexperienced user suitable Pokemons")
     mpl.figtext(0.5, 0.01, txt, wrap=True, horizontalalignment='center', fontsize=10)
-
+    
     mpl.subplot(121)
-    mpl.barh(range(npk),Bperwin.flatten())
-    mpl.yticks(tks, Bks_clean,color='k')
+    mpl.barh(tks,Bperwin[meaningful].flatten())
+    mpl.yticks(tks, Bks_clean[meaningful],color='k')
     ax=mpl.gca()
-    for i in Beasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Bhard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Beasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Bhard:
+            ax.get_yticklabels()[i].set_color('r')
 
     mpl.xlabel("Percentage of victories")
 
     mpl.subplot(122)
-    mpl.barh(tks,BmnHP.flatten(),xerr=BsdHP.flatten())
-    mpl.yticks(tks, Bks_clean,color='k')
+    mpl.barh(tks,BmnHP[meaningful].flatten(),xerr=BsdHP[meaningful].flatten())
+    mpl.yticks(tks, Bks_clean[meaningful],color='k')
     ax=mpl.gca()
-    for i in Beasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Bhard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Beasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Bhard:
+            ax.get_yticklabels()[i].set_color('r')
     mpl.xlabel("Mean %HP at the end of each turn")
     mpl.suptitle("Wild pokemon specific statistics for Bulbasaur")
 
@@ -194,18 +204,17 @@ def Visualize():
         Cperwin[idx]=Cperwin[idx]/len(v)*100
         idx+=1
 
-    Ceasy=[id for id in range(len(CharmanderEneWin)) if 
-           70<=Cperwin[id] and CmnHP[id]>=70]
-    if not Ceasy:
-        Ceasy=[1,10,20]
-    Chard=[id for id in range(len(CharmanderEneWin)) if 
-           50<=Cperwin[id]<=70 and np.mean(Cturn[id])>=medianT]
+    Ceasy=np.array([id for id in range(len(CharmanderEneWin)) if 
+           70<=Cperwin[id] and CmnHP[id]>=70])
+    
+    Chard=np.array([id for id in range(len(CharmanderEneWin)) if 
+           50<=Cperwin[id]<=70 and np.mean(Cturn[id])>=medianT])
 
     Cks=np.array(list(CharmanderEneWin.keys()))
-    Cks_clean=[Cks[i] if (i in Ceasy or i in Chard) else "" for i in range(npk) ]
-    tks=np.array(range(npk))
+    Cks_clean=np.array([Cks[i] if (i in Ceasy or i in Chard) else "" for i in range(npk) ])
+    tks=np.array(range(len(Ceasy)+len(Chard)))
 
-
+    meaningful=np.sort(np.concatenate((Ceasy,Chard)))
     mpl.figure()
     
     txt=("\n\nRED: skilled user suitable Pokemons\n"+
@@ -213,24 +222,27 @@ def Visualize():
     mpl.figtext(0.5, 0.01, txt, wrap=True, horizontalalignment='center', fontsize=10)
 
     mpl.subplot(121)
-    mpl.barh(range(npk),Cperwin.flatten())
-    mpl.yticks(tks, Cks_clean,color='k')
+    mpl.barh(tks,Cperwin[meaningful].flatten())
+    mpl.yticks(tks, Cks_clean[meaningful] ,color='k')
     ax=mpl.gca()
-    for i in Ceasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Chard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Ceasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Chard:
+            ax.get_yticklabels()[i].set_color('r')
+
 
     mpl.xlabel("Percentage of victories")
 
     mpl.subplot(122)
-    mpl.barh(tks,CmnHP.flatten(),xerr=CsdHP.flatten())
-    mpl.yticks(tks, Cks_clean,color='k')
+    mpl.barh(tks,CmnHP[meaningful].flatten(),xerr=CsdHP[meaningful].flatten())
+    mpl.yticks(tks, Cks_clean[meaningful],color='k')
     ax=mpl.gca()
-    for i in Ceasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Chard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Ceasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Chard:
+            ax.get_yticklabels()[i].set_color('r')
     mpl.xlabel("Mean %HP at the end of each turn")
     mpl.suptitle("Wild pokemon specific statistics for Charmander")
 
@@ -255,15 +267,17 @@ def Visualize():
         Sperwin[idx]=Sperwin[idx]/len(v)*100
         idx+=1
 
-    Seasy=[id for id in range(len(SquirtleEneWin)) if 
-           70<=Sperwin[id] and SmnHP[id]>=70]
+    Seasy=np.array([id for id in range(len(SquirtleEneWin)) if 
+           70<=Sperwin[id] and SmnHP[id]>=70])
     
-    Shard=[id for id in range(len(SquirtleEneWin)) if 
-           50<=Sperwin[id]<=70 and np.mean(Sturn[id])>=medianT]
+    Shard=np.array([id for id in range(len(SquirtleEneWin)) if 
+           50<=Sperwin[id]<=70 and np.mean(Sturn[id])>=medianT])
 
     Sks=np.array(list(SquirtleEneWin.keys()))
-    Sks_clean=[Sks[i] if (i in Seasy or i in Shard) else "" for i in range(npk) ]
-    tks=np.array(range(npk))
+    Sks_clean=np.array([Sks[i] if (i in Seasy or i in Shard) else "" for i in range(npk) ])
+    tks=np.array(range(len(Seasy)+len(Shard)))
+
+    meaningful=np.sort(np.concatenate((Seasy,Shard)))
 
 
     mpl.figure()
@@ -273,24 +287,26 @@ def Visualize():
     mpl.figtext(0.5, 0.01, txt, wrap=True, horizontalalignment='center', fontsize=10)
 
     mpl.subplot(121)
-    mpl.barh(range(npk),Sperwin.flatten())
-    mpl.yticks(tks, Sks_clean,color='k')
+    mpl.barh(tks,Sperwin[meaningful].flatten())
+    mpl.yticks(tks, Sks_clean[meaningful],color='k')
     ax=mpl.gca()
-    for i in Seasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Shard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Seasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Shard:
+            ax.get_yticklabels()[i].set_color('r')
 
     mpl.xlabel("Percentage of victories")
 
     mpl.subplot(122)
-    mpl.barh(tks,SmnHP.flatten(),xerr=SsdHP.flatten())
-    mpl.yticks(tks, Sks_clean,color='k')
+    mpl.barh(tks,SmnHP[meaningful].flatten(),xerr=SsdHP[meaningful].flatten())
+    mpl.yticks(tks, Sks_clean[meaningful],color='k')
     ax=mpl.gca()
-    for i in Seasy:
-        ax.get_yticklabels()[i].set_color('g')
-    for i in Shard:
-       ax.get_yticklabels()[i].set_color('r')
+    for i in tks:
+        if  meaningful[i] in Seasy:
+            ax.get_yticklabels()[i].set_color('g')
+        elif meaningful[i] in Shard:
+            ax.get_yticklabels()[i].set_color('r')
     mpl.xlabel("Mean %HP at the end of each turn")
     mpl.suptitle("Wild pokemon specific statistics for Squirtle")
     mpl.show()
