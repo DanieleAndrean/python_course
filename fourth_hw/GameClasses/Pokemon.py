@@ -4,7 +4,11 @@ import UserInput
 import random
 import math
 import os
-from PokeData.load import TypEffList
+from PokeData.load import TypEffDF
+
+########################################################
+#               STATS CLASSES
+######################################################
 class baseStats:
     def __init__(self,bsDict):
         self.hp=bsDict["hp"]
@@ -22,7 +26,33 @@ class baseStats:
 
     def getMaxHP(self):
         return copy.deepcopy(self.hp)
+    def getAtk(self):
+        return copy.deepcopy(self.attack)
+    def getDef(self):
+        return copy.deepcopy(self.defense)
+    def getSpc(self):
+        return copy.deepcopy(self.special)
+    def getSpd(self):
+        return copy.deepcopy(self.speed)
+    
 
+class actualStats(baseStats):
+
+    def __init__(self,bStats,lvl):
+        self.hp=math.floor(bStats.hp*2*lvl/100)+lvl+10
+        self.attack=math.floor(bStats.attack*2*lvl/100)+5
+        self.defense=math.floor(bStats.defense*2*lvl/100)+5
+        self.speed=math.floor(bStats.speed*2*lvl/100)+5
+        self.special=math.floor(bStats.special*2*lvl/100)+5
+
+    def update(self,lvl,bStats):
+        self.hp=math.floor(bStats.hp*2*lvl/100)+lvl+10
+        self.attack=math.floor(bStats.attack*2*lvl/100)+5
+        self.defense=math.floor(bStats.defense*2*lvl/100)+5
+        self.speed=math.floor(bStats.speed*2*lvl/100)+5
+        self.special=math.floor(bStats.special*2*lvl/100)+5
+    
+    
 #################################################
 ############### MOVE CLASS ###################
 #################################################
@@ -61,16 +91,17 @@ class Move:
 ############### POKEMON CLASS ###################
 #################################################
 class Pokemon:
-    def __init__(self,PokeDict,moves):
-        self.Level=1
+    def __init__(self,PokeDict,moves,lvl):
+        self.Level=lvl
         self.Name=PokeDict["name"]
         self.MaxMoves=4
         self.Types=PokeDict["types"]
         self.baseStats=baseStats(PokeDict["baseStats"])
+        self.actualStats=actualStats(self.baseStats,self.Level)
         self.moves=[]
         for i in range(len(moves)):
             self.moves.append(Move(moves[i]))
-        self.currentHP=self.baseStats.hp
+        self.currentHP=self.actualStats.getMaxHP()
         self.Pokedex=PokeDict["national_pokedex_number"]
         self.KO=False
 
@@ -86,7 +117,10 @@ class Pokemon:
         return copy.deepcopy(self.KO)
     
     #returns a copy of the current HP
-    def showHP(self):
+    def showHP(self,*maxFlag):
+        if maxFlag:
+            if maxFlag[0]=="max":
+                return self.actualStats.getMaxHP()
         return copy.deepcopy(self.currentHP)    
     
     #returns a string to display the current moves
@@ -147,10 +181,10 @@ class Pokemon:
         #if quantity is not empty
         if quantity:
             self.currentHP+=quantity[0]
-            if self.currentHP>self.baseStats.hp:
-                self.currentHP=self.baseStats.hp
+            if self.currentHP>self.actualStats.getMaxHP():
+                self.currentHP=self.actualStats.getMaxHP()
         else:
-            self.currentHP=self.baseStats.hp
+            self.currentHP=self.actualStats.getMaxHP()
             self.KO=False
             
 
@@ -163,11 +197,11 @@ class Pokemon:
         #dmg computation
         if selMove.accuracy>succProb:
             if selMove.category=="physical":
-                atk=self.baseStats.attack
-                dfn=target.baseStats.defense
+                atk=self.actualStats.getAtk()
+                dfn=target.actualStats.getDef()
             else:
-                atk=self.baseStats.special
-                dfn=target.baseStats.special
+                atk=self.actualStats.getSpc()
+                dfn=target.actualStats.getSpc()
 
             #stability modifier calculation
             if selMove.type in self.Types:
@@ -175,10 +209,10 @@ class Pokemon:
             else:
                 stability=1
         
-            effect=np.prod([eff["effectiveness"] for eff in TypEffList 
+            effect=np.prod([eff["effectiveness"] for eff in TypEffDF 
                             if eff["attack"]==selMove.type and eff["defend"] in target.Types])
             #critical modifier calculation
-            if random.random()<self.baseStats.speed/512:
+            if random.random()<self.actualStats.getSpd()/512:
                 critical=2
             else:
                 critical=1
