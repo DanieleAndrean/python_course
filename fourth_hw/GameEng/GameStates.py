@@ -5,8 +5,7 @@ import os
 from UserInput import inputLoop, askInput
 from GameClasses.Pokemon import *
 from GameEng.Combat import combatTest,combat
-from PokeData.load import PkDF,MvsDF
-import pandas as pd
+from PokeData.load import PkDF,MvDF
 
 #########################################################################################
 #                               CUSTOM STATE AND FSM                                    #
@@ -222,7 +221,9 @@ class WildEncounter(GameState):
 
         #generate enemy pk
         pk=PkDF.sample(n=1)
-        enemyPk=Pokemon(pk, MvsDF[MvsDF["type"] in pk["types"] or ["type"]=="normal"].sample(n=2))
+        mvs=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
+        lvl=random.randint(1,20)
+        enemyPk=Pokemon(pk,mvs,lvl)
         if not self.testMode:
             print("A wild Pokemon approches you: \n\n"+ str(enemyPk))
             askInput("","\nPress Enter to continue...")
@@ -230,8 +231,7 @@ class WildEncounter(GameState):
         else:
             ext, stats = combatTest(self.Trainer,enemyPk)
             self.exitcond=ext
-            tmp=pd.DataFrame(ext,columns="exitcond")
-            self.Trainer.battles.append(pd.concat([tmp,stats], axis=1))
+            self.Trainer.saveBatt(tstargs["Battle"],{"Exitcond":ext,**stats})
         
     def update(self,choices,**tstargs):
         if self.exitcond=="Def":

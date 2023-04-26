@@ -1,7 +1,7 @@
 from UserInput import *
 from GameEng.FSM import FiniteStateMachine, State
 from GameEng.CombatStates import *
-import pandas as pd
+
 #################################Combat handling funciton##############################################
 def combat(Trainer,enemyPk):
    
@@ -90,6 +90,9 @@ def combat(Trainer,enemyPk):
     return exitcon
 
 
+##############################################################################################
+#                       TEST MODE   
+##############################################################################################
 
 
 def combatTest(Trainer,enemyPk):
@@ -124,13 +127,14 @@ def combatTest(Trainer,enemyPk):
     nTurns=0
     while CbtEngine.state not in CbtEngine.final_states:
         nTurns+=1
-        CbtEngine.eval_current(Trainer=Trainer,enemyPk=enemyPk)
+        CbtEngine.eval_current(Trainer=Trainer,enemyPk=enemyPk,turn=nTurns-1)
         target=CbtEngine.update(Trainer=Trainer,enemyPk=enemyPk)
         CbtEngine.do_transition(target, CbtEngine.get_transition_attributes(target))
 
     exitcon=None
     percHP=(Trainer.PokemonList[0].showHP()/Trainer.PokemonList[0].showHP("max"))*100
-    stats={"nTurns":nTurns,"percHP":percHP,"enemyPk":enemyPk.Name}
+    stats={"NTurns":nTurns,"PercHP":percHP,"Pokemon":Trainer.PokemonList[0].Name,
+           "PokemonLvl":Trainer.PokemonList[0].Level,"EnemyPk":enemyPk.Name,"EnemyLvl":enemyPk.Level}
     match CbtEngine.state.name:
         case "Victory":
             exitcon="Vct"

@@ -323,8 +323,8 @@ class EnemyTurn(State):
         return next(st for st in choices if st.name=="Combat Menu")
     
 
-#####################################################################################
-#                       TEST
+#####################################################################################                                  
+#                                   TEST
 #####################################################################################
 
 class TestCbt(State):
@@ -332,12 +332,18 @@ class TestCbt(State):
     def run(self,**fighters):
         Trainer=fighters["Trainer"]
         enemyPk=fighters["enemyPk"]
-
+        nturn=fighters["turn"]
         availMoves=Trainer.PokemonList[0].availMoves()
         if availMoves:
             mv=random.choice(availMoves)
-  
+            eneHPprec=enemyPk.showHP()
             Trainer.PokemonList[0].useMove(mv,enemyPk)
+            eneHPsucc=enemyPk.showHP()
+            dmg=eneHPprec-eneHPsucc
+            battleIdx=Trainer.battles[-1]["Battle"]
+            Trainer.saveTurn({"Battle":battleIdx, "Turn":nturn, "Move":Trainer.PokemonList[0].moves[mv].name,
+                              "CurrHP":Trainer.PokemonList[0].showHP(), "Damage":dmg})
+            
         else:
             for mv in  Trainer.PokemonList[0].moves:
                 mv.restorePP()

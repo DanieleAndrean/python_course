@@ -3,47 +3,70 @@ from GameClasses.Pokemon import Pokemon
 from GameClasses.TstTrainer import TstTrainer
 from GameClasses.Item import Item
 from GameEng.GameStates import *
-from PokeData.load import PkDF,MvsDF
+from PokeData.load import PkDF,MvDF
 from PokeData.ItemsList import ItList
 import random
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
+from joblib import Parallel, delayed
 def main():
     
 
-    nSim=500
+    nSim=1000
     Nbattles=150
     
 
     #Starters
     Starters=[]
+   
     pk=PkDF[PkDF["name"]=="bulbasaur"]
-    mv=MvsDF[MvsDF["type"] in  pk["types"] or MvsDF["type"]=="normal"].sample(n=2)
-    Starters.append(Pokemon(pk, mv))
+    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
+    Starters.append(Pokemon(pk, mv,1))
                     
     pk=PkDF[PkDF["name"]=="charmander"]
-    mv=MvsDF[MvsDF["type"] in  pk["types"] or MvsDF["type"]=="normal"].sample(n=2)
-    Starters.append(Pokemon(pk, mv))
+    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
+    Starters.append(Pokemon(pk, mv,1))
     
     pk=PkDF[PkDF["name"]=="squirtle"]
-    mv=MvsDF[MvsDF["type"] in  pk["types"] or MvsDF["type"]=="normal"].sample(n=2)
-    Starters.append(Pokemon(pk, mv))
+    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
+    Starters.append(Pokemon(pk, mv,1))
 
 
-    res=pd.DataFrame()
-    for i in range(nSim):
+    
+    def process(Starters,Nbattles,i):
+       battList=[]
+       turnList=[]
        Starter=random.choice(Starters)
+       lvl=random.randint(1,20)
+       Starter.lvlUp(lvl)
        sim=SingleSim(Starter,Nbattles)
-       tmp=pd.DataFrame(np.ones((Nbattles,1))*i,columns="TrainerIdx")
-       res.append(pd.concat([tmp,sim.battles],axis=1))
+       for item in sim.battles: item['NGame']=i
+       for item in sim.battleTurns: item['NGame']=i
+       battList=sim.battles
+       battList.pop()
+       turnList=sim.battleTurns
+       turnList.pop()
+       return battList,turnList
+    results = Parallel(n_jobs=4)(delayed(process)(Starters,Nbattles,i) for i in range(nSim))
+    
+    battList=[]
+    turnList=[]
+    for i in range(len(results)):
+        battList.extend(results[i][0])
+        turnList.extend(results[i][1])
+       
 
-    SaveFile="Results.csv"
-    res.to_csv(SaveFile)
-    
-    
-    
+    resBatt=pd.DataFrame(battList)
+    resTurn=pd.DataFrame(turnList)
+
+    BattFile="Battles.csv"
+    TurnFile="Turns.csv"
+    resBatt.to_csv(BattFile)
+    resTurn.to_csv(TurnFile)
+
+
+       
     
    
 
@@ -56,7 +79,7 @@ def SingleSim(Starter,Nbattles):
     
     #Starting items
     StartItm=[]
-
+    
     Tr=TstTrainer("Test",[],StartItm)
     Tr.PokemonList.append(Starter)
 
@@ -84,12 +107,12 @@ def SingleSim(Starter,Nbattles):
     Game.initialize()
     
     nbattles=0
-    
+    Tr.battles.append({"Battle":nbattles})
     while Game.state not in Game.final_states:
         Tr=Game.state.Trainer
         Game.eval_current(Battle=nbattles)
         if Game.state is pokeCenter:
-            Tr.battles[nbattles]["Battle"]=nbattles+1
+            Tr.battles.append({"Battle":nbattles+1})
             nbattles+=1
 
         target=Game.update(Battle=nbattles)

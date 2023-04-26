@@ -5,17 +5,19 @@ import random
 import math
 import os
 from PokeData.load import TypEffDF
-
+from to1D import to_1D
+import pandas as pd
 ########################################################
 #               STATS CLASSES
 ######################################################
 class baseStats:
-    def __init__(self,bsDict):
-        self.hp=bsDict["hp"]
-        self.attack=bsDict["attack"]
-        self.defense=bsDict["defense"]
-        self.speed=bsDict["speed"]
-        self.special=bsDict["special"]
+    def __init__(self,bsSeries):
+        bsDict=to_1D(bsSeries)
+        self.hp=bsDict["hp"].values[0]
+        self.attack=bsDict["attack"].values[0]
+        self.defense=bsDict["defense"].values[0]
+        self.speed=bsDict["speed"].values[0]
+        self.special=bsDict["special"].values[0]
 
     def update(self,hp,attack,defense,speed,special):
         self.hp=hp
@@ -39,18 +41,18 @@ class baseStats:
 class actualStats(baseStats):
 
     def __init__(self,bStats,lvl):
-        self.hp=math.floor(bStats.hp*2*lvl/100)+lvl+10
-        self.attack=math.floor(bStats.attack*2*lvl/100)+5
-        self.defense=math.floor(bStats.defense*2*lvl/100)+5
-        self.speed=math.floor(bStats.speed*2*lvl/100)+5
-        self.special=math.floor(bStats.special*2*lvl/100)+5
+        self.hp=math.floor(bStats.getMaxHP()*2*lvl/100)+lvl+10
+        self.attack=math.floor(bStats.getAtk()*2*lvl/100)+5
+        self.defense=math.floor(bStats.getDef()*2*lvl/100)+5
+        self.speed=math.floor(bStats.getSpd()*2*lvl/100)+5
+        self.special=math.floor(bStats.getSpc()*2*lvl/100)+5
 
     def update(self,lvl,bStats):
-        self.hp=math.floor(bStats.hp*2*lvl/100)+lvl+10
-        self.attack=math.floor(bStats.attack*2*lvl/100)+5
-        self.defense=math.floor(bStats.defense*2*lvl/100)+5
-        self.speed=math.floor(bStats.speed*2*lvl/100)+5
-        self.special=math.floor(bStats.special*2*lvl/100)+5
+        self.hp=math.floor(bStats.getMaxHP()*2*lvl/100)+lvl+10
+        self.attack=math.floor(bStats.getAtk()*2*lvl/100)+5
+        self.defense=math.floor(bStats.getDef()*2*lvl/100)+5
+        self.speed=math.floor(bStats.getSpd()*2*lvl/100)+5
+        self.special=math.floor(bStats.getSpc()*2*lvl/100)+5
     
     
 #################################################
@@ -95,12 +97,12 @@ class Pokemon:
         self.Level=lvl
         self.Name=PokeDict["name"]
         self.MaxMoves=4
-        self.Types=PokeDict["types"]
+        self.Types=to_1D(PokeDict["types"]).values.tolist()[0]
         self.baseStats=baseStats(PokeDict["baseStats"])
         self.actualStats=actualStats(self.baseStats,self.Level)
         self.moves=[]
-        for i in range(len(moves)):
-            self.moves.append(Move(moves[i]))
+        for idx, m in moves.iterrows():
+            self.moves.append(Move(m))
         self.currentHP=self.actualStats.getMaxHP()
         self.Pokedex=PokeDict["national_pokedex_number"]
         self.KO=False
@@ -123,6 +125,9 @@ class Pokemon:
                 return self.actualStats.getMaxHP()
         return copy.deepcopy(self.currentHP)    
     
+    #Updates stats based on new level
+    def lvlUp(self,lvl):
+        self.actualStats.update(lvl,self.baseStats)
     #returns a string to display the current moves
     def movesDisp(self,*sel):
         if len(sel)==0: #display all
@@ -208,9 +213,10 @@ class Pokemon:
                 stability=1.5
             else:
                 stability=1
-        
-            effect=np.prod([eff["effectiveness"] for eff in TypEffDF 
-                            if eff["attack"]==selMove.type and eff["defend"] in target.Types])
+
+            eff=TypEffDF[(TypEffDF["attack"]==selMove.type) & (TypEffDF["defend"].isin(target.Types))]
+            eff=pd.concat([eff,pd.DataFrame([{"effectiveness":1,"attack":"default","defend":"default"}])])
+            effect=np.prod(eff["effectiveness"].values[0])
             #critical modifier calculation
             if random.random()<self.actualStats.getSpd()/512:
                 critical=2
