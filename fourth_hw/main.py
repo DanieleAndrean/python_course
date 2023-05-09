@@ -16,30 +16,19 @@ def main():
     nSim=1000
     Nbattles=150
     
-
     #Starters
-    Starters=[]
-   
-    pk=PkDF[PkDF["name"]=="bulbasaur"]
-    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
-    Starters.append(Pokemon(pk, mv,1))
+    Starters=["bulbasaur","charmander","squirtle"]
                     
-    pk=PkDF[PkDF["name"]=="charmander"]
-    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
-    Starters.append(Pokemon(pk, mv,1))
-    
-    pk=PkDF[PkDF["name"]=="squirtle"]
-    mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
-    Starters.append(Pokemon(pk, mv,1))
-
-
-    
+ 
     def process(Starters,Nbattles,i):
        battList=[]
        turnList=[]
-       Starter=random.choice(Starters)
+       StarterName=random.choice(Starters)
        lvl=random.randint(1,20)
-       Starter.lvlUp(lvl)
+       pk=PkDF[PkDF["name"]==StarterName]
+       mv=MvDF[(MvDF["type"].isin(pk["types"].values[0])) | (MvDF["type"]=="normal")].sample(n=2)
+       Starter=Pokemon(pk, mv,lvl)
+       
        sim=SingleSim(Starter,Nbattles)
        for item in sim.battles: item['NGame']=i
        for item in sim.battleTurns: item['NGame']=i
@@ -48,6 +37,7 @@ def main():
        turnList=sim.battleTurns
        turnList.pop()
        return battList,turnList
+    
     results = Parallel(n_jobs=4)(delayed(process)(Starters,Nbattles,i) for i in range(nSim))
     
     battList=[]
@@ -58,10 +48,11 @@ def main():
        
 
     resBatt=pd.DataFrame(battList)
+    
     resTurn=pd.DataFrame(turnList)
-
-    BattFile="Battles.csv"
-    TurnFile="Turns.csv"
+    path=os.path.dirname(os.path.abspath(__file__))
+    BattFile=path+"\\Battles.csv"
+    TurnFile=path+"\\Turns.csv"
     resBatt.to_csv(BattFile)
     resTurn.to_csv(TurnFile)
 

@@ -95,7 +95,7 @@ class Move:
 class Pokemon:
     def __init__(self,PokeDict,moves,lvl):
         self.Level=lvl
-        self.Name=PokeDict["name"]
+        self.Name=PokeDict["name"].values[0]
         self.MaxMoves=4
         self.Types=to_1D(PokeDict["types"]).values.tolist()[0]
         self.baseStats=baseStats(PokeDict["baseStats"])
@@ -104,7 +104,7 @@ class Pokemon:
         for idx, m in moves.iterrows():
             self.moves.append(Move(m))
         self.currentHP=self.actualStats.getMaxHP()
-        self.Pokedex=PokeDict["national_pokedex_number"]
+        self.Pokedex=PokeDict["national_pokedex_number"].values[0]
         self.KO=False
 
     def __str__(self):
@@ -127,6 +127,7 @@ class Pokemon:
     
     #Updates stats based on new level
     def lvlUp(self,lvl):
+        self.Level=lvl
         self.actualStats.update(lvl,self.baseStats)
     #returns a string to display the current moves
     def movesDisp(self,*sel):
